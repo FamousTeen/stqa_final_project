@@ -106,7 +106,7 @@ export async function uploadImage(formData: FormData) {
 // Users
 export async function getUsers() {
   await checkAdmin();
-  const { data, error } = await supabaseServer.from('profiles').select('*').order('created_at', { ascending: false });
+  const { data, error } = await supabaseServer.from('profiles').select('*').eq('role', 'user').order('created_at', { ascending: false });
   if (error) throw error;
   return data as Profile[];
 }
