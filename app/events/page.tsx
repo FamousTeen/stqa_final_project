@@ -45,6 +45,8 @@ export default function EventsPage() {
               {events.map(event => {
                 const imageSrc = event.image?.startsWith("http")
                   ? event.image
+                  : event.image?.startsWith("/")
+                  ? event.image
                   : "/" + event.image;
 
                 return (

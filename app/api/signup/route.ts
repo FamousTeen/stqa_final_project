@@ -19,6 +19,9 @@ export async function POST(request: Request) {
     errors.email = "Email is required";
   if (!body.password || body.password.trim() === "")
     errors.password = "Password is required";
+  if (body.password && body.password.length < 6) {
+    errors.password = "Password must be at least 6 characters.";
+  }
   if (body.password !== body.password_confirmation)
     errors.password_confirmation = "Passwords do not match";
 
@@ -50,9 +53,10 @@ export async function POST(request: Request) {
     });
 
     if (error) {
+      console.error("Supabase createUser error:", error);
       // supabase admin errors often returned in error.message
       return NextResponse.json(
-        { errors: { email: error.message } },
+        { errors: { email: error.message, general: error.message } },
         { status: 400 }
       );
     }

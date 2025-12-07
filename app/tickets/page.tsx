@@ -5,6 +5,7 @@ import Link from "next/link";
 import Layout from "./../components/Layout";
 import { supabase } from "../lib/supabaseClient";
 import { Order } from "../types/order";
+import { Concert } from "../types/concert";
 import { useRouter } from "next/navigation";
 
 export default function TicketsPage() {
@@ -40,9 +41,11 @@ export default function TicketsPage() {
         .select(
           `
             id,
+            user_id,
+            concert_id,
             total_price,
             status,
-            qty,
+            quantity,
             created_at,
             concerts (
               title,
@@ -62,19 +65,21 @@ export default function TicketsPage() {
       const formatted: Order[] = data.map((item: any) => {
         const concert = Array.isArray(item.concerts)
           ? item.concerts[0]
-          : null;
+          : item.concerts;
 
         return {
           id: item.id,
+          user_id: item.user_id,
+          concert_id: item.concert_id,
           total_price: item.total_price,
           status: item.status,
-          qty: item.qty ?? 0,
+          quantity: item.quantity,
           created_at: item.created_at,
           concerts: {
             title: concert?.title ?? "",
             location: concert?.location ?? "",
             start_at: concert?.start_at ?? "",
-          },
+          } as unknown as Concert,
         };
       });
 

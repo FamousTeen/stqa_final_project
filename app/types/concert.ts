@@ -1,15 +1,15 @@
 export type Concert = {
-  id: number;
+  id: string;
   title: string;
-  description: string;
-  image: string;          // URL dari Supabase storage
+  description: string | null;
+  start_at: string;
+  end_at: string | null;
   location: string;
-  start_at: string;       // ISO timestamp
-  end_at: string;
-  qty: number;            // Total available tickets
   price: number;
-  published: boolean;
+  total_tickets: number;
+  available_tickets: number;
+  image: string | null;
   featured: boolean;
+  published: boolean;
   created_at: string;
-  updated_at: string;
 };

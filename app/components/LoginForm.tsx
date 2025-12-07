@@ -56,7 +56,10 @@ export default function LoginForm() {
       const error = result?.error ?? (result?.ok === false ? "Login failed" : undefined);
 
       if (error) {
-        setErrors({ general: typeof error === "string" ? error : "Login failed" });
+        const errorMessage = error === "CredentialsSignin" 
+          ? "Invalid credentials. Please try again." 
+          : error;
+        setErrors({ general: typeof errorMessage === "string" ? errorMessage : "Login failed" });
         setLoading(false);
         return;
       }
@@ -165,7 +168,7 @@ export default function LoginForm() {
           </button>
         </div>
 
-        {errors?.general && <p className="mt-4 text-red-400">Invalid credentials. Please try again.</p>}
+        {errors?.general && <p className="mt-4 text-red-400">{errors.general}</p>}
       </form>
     </div>
   );

@@ -1,14 +1,13 @@
-export interface Concert {
-  title: string;
-  location: string;
-  start_at: string;
-}
+import { Concert } from './concert';
 
-export interface Order {
+export type Order = {
   id: string;
+  user_id: string;
+  concert_id: string;
+  quantity: number;
   total_price: number;
   status: string;
-  qty: number;
   created_at: string;
-  concerts: Concert;
-}
+  concerts?: Concert; // For joined queries
+  profiles?: { email: string }; // For joined queries
+};

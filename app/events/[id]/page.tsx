@@ -6,6 +6,7 @@ import { supabase } from "../../lib/supabaseClient";
 import Image from "next/image";
 import { Concert } from "../../types/concert";
 import { useRouter } from "next/navigation";
+import { createOrderAction } from "@/app/actions";
 
 type EventParams = {
   id: string;
@@ -16,6 +17,7 @@ export default function EventDetailPage({ params }: {params: Promise<EventParams
   const [event, setEvent] = useState<Concert>();
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(0);
+  const [processing, setProcessing] = useState(false);
 
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
@@ -72,44 +74,23 @@ export default function EventDetailPage({ params }: {params: Promise<EventParams
   };
 
   const createOrder = async () => {
-  if (!event) return;
+    if (!event) return;
+    setProcessing(true);
 
-  const total = qty * event.price;
-
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session?.user?.id) {
-    alert("User tidak ditemukan. Silakan login ulang.");
-    return;
-  }
-
-  const userId = session.user.id;
-
-  const { data: order, error } = await supabase
-    .from("orders")
-    .insert({
-      user_id: userId,
-      concert_id: event.id,
-      qty,
-      total_price: total,
-      status: "success",
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error("ORDER ERROR:", error);
-    alert("Gagal membuat order.");
-    return;
-  }
-
-  await supabase
-    .from("concerts")
-    .update({ qty: event.qty - qty })
-    .eq("id", event.id);
-
-  router.push(`/tickets/${order.id}`);
-};
+    try {
+      const order = await createOrderAction(event.id, qty);
+      router.push(`/tickets/${order.id}`);
+    } catch (error) {
+      console.error("Checkout error:", error);
+      if (error instanceof Error) {
+        alert(error.message || "Gagal membuat order.");
+      } else {
+        alert("Gagal membuat order.");
+      }
+    } finally {
+      setProcessing(false);
+    }
+  };
 
 
    if (!authChecked) {
@@ -159,7 +140,7 @@ export default function EventDetailPage({ params }: {params: Promise<EventParams
                   src={imageSrc}
                   alt={event.title}
                   fill
-                  className="object-cover"
+                  className="object-contain"
                 />
               </div>
             )}
@@ -211,7 +192,7 @@ export default function EventDetailPage({ params }: {params: Promise<EventParams
                   <p className="mt-1 text-sm text-gray-300">
                     Rp {event.price.toLocaleString("id-ID")}
                     <span className="ml-2 text-xs text-indigo-300">
-                      • Stock: {event.qty}
+                      • Stock: {event.available_tickets} / {event.total_tickets}
                     </span>
                   </p>
                 </div>
@@ -220,7 +201,7 @@ export default function EventDetailPage({ params }: {params: Promise<EventParams
                   <input
                     type="number"
                     min={0}
-                    max={event.qty}
+                    max={event.available_tickets}
                     value={qty}
                     onChange={(e) => setQty(parseInt(e.target.value))}
                     className="w-full text-center bg-[#0C1128] border border-indigo-400/30 rounded-lg py-1 text-white"
@@ -235,9 +216,10 @@ export default function EventDetailPage({ params }: {params: Promise<EventParams
 
               <button
                 onClick={handleCheckout}
-                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-lg transition w-full md:w-auto"
+                disabled={processing}
+                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-lg transition w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Proceed to Payment →
+                {processing ? "Processing..." : "Proceed to Payment →"}
               </button>
             </div>
           </div>

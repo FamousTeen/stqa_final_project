@@ -91,7 +91,13 @@ export default function Home() {
                       className="bg-[#0F1F45] rounded-2xl overflow-hidden shadow-lg border border-white/5"
                     >
                       <Image
-                        src={event.image.startsWith("/") ? event.image : "/" + event.image}
+                        src={
+                          event.image
+                            ? event.image.startsWith("http") || event.image.startsWith("/")
+                              ? event.image
+                              : "/" + event.image
+                            : "/banner1.jpg"
+                        }
                         width={500}
                         height={300}
                         alt={event.title}

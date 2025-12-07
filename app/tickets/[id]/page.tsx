@@ -6,6 +6,7 @@ import Layout from "../../components/Layout";
 import { supabase } from "../../lib/supabaseClient";
 import { useParams } from "next/navigation";
 import { Order } from "../../types/order";
+import { Concert } from "../../types/concert";
 
 export default function TicketDetailPage() {
   const params = useParams();
@@ -21,9 +22,11 @@ export default function TicketDetailPage() {
       .select(
         `
         id,
+        user_id,
+        concert_id,
         total_price,
         status,
-        qty,
+        quantity,
         created_at,
         concerts (
           title,
@@ -52,15 +55,17 @@ export default function TicketDetailPage() {
 
     const formatted: Order = {
       id: data.id,
+      user_id: data.user_id,
+      concert_id: data.concert_id,
       total_price: data.total_price,
       status: data.status,
-      qty: data.qty,
+      quantity: data.quantity,
       created_at: data.created_at,
       concerts: {
         title: concert?.title ?? "",
         location: concert?.location ?? "",
         start_at: concert?.start_at ?? "",
-      },
+      } as unknown as Concert,
     };
 
     setOrder(formatted);
@@ -79,11 +84,11 @@ export default function TicketDetailPage() {
   const items = [
     {
       ticket_type_name: "Basic Ticket",
-      quantity: order.qty,
+      quantity: order.quantity,
       event: {
-        title: concert.title,
-        venue: concert.location,
-        date: concert.start_at,
+        title: concert?.title ?? "",
+        venue: concert?.location ?? "",
+        date: concert?.start_at ?? "",
       },
     },
   ];
@@ -133,13 +138,13 @@ export default function TicketDetailPage() {
               </p>
               <p>
                 <span className="font-semibold text-indigo-300">Event Date:</span>{" "}
-                {new Date(items[0].event.date).toLocaleString("id-ID", {
+                {items[0].event.date ? new Date(items[0].event.date).toLocaleString("id-ID", {
                   day: "2-digit",
                   month: "short",
                   year: "numeric",
                   hour: "2-digit",
                   minute: "2-digit",
-                })}
+                }) : "-"}
               </p>
             </div>
 
@@ -164,7 +169,13 @@ export default function TicketDetailPage() {
                   flex flex-col lg:flex-row lg:items-center gap-6 mb-6"
                 >
                   <div className="flex justify-center items-center bg-[#0F1F45] p-4 rounded-xl border border-white/10">
-                    <QRCodeSVG value={JSON.stringify(ticketData)} size={180} />
+                    <QRCodeSVG
+                      value={JSON.stringify(ticketData)}
+                      size={180}
+                      bgColor="#ffffff"
+                      fgColor="#000000"
+                      includeMargin={true}
+                    />
                   </div>
 
                   <div className="text-gray-300 space-y-1">
@@ -186,13 +197,13 @@ export default function TicketDetailPage() {
                     </p>
                     <p>
                       <span className="text-indigo-300 font-semibold">Date:</span>{" "}
-                      {new Date(item.event.date).toLocaleString("id-ID", {
+                      {item.event.date ? new Date(item.event.date).toLocaleString("id-ID", {
                         day: "2-digit",
                         month: "short",
                         year: "numeric",
                         hour: "2-digit",
                         minute: "2-digit",
-                      })}
+                      }) : "-"}
                     </p>
                   </div>
                 </div>

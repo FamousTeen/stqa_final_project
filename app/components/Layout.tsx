@@ -17,7 +17,7 @@ export default function Layout({
   title?: string;
 }) {
   const { data: session, status } = useSession();
-  const isAuthenticated = status === "authenticated";
+  const isAuthenticated = status === "authenticated" && !!session?.user;
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   return (
