@@ -90,4 +90,40 @@ describe("LoginForm", () => {
       expect(push).toHaveBeenCalledWith("/admin");
     });
   });
+
+  it("redirects to callbackUrl for non-admin users when provided", async () => {
+    mockedSignIn.mockResolvedValue({ ok: true, error: undefined });
+    mockedUseSearchParams.mockReturnValue(
+      new URLSearchParams("callbackUrl=/tickets/123")
+    );
+
+    render(<LoginForm />);
+
+    await user.type(screen.getByLabelText(/email/i), "user@example.com");
+    await user.type(
+      screen.getByLabelText(/password/i, { selector: "input" }),
+      "secret123"
+    );
+    await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+    await waitFor(() => {
+      expect(push).toHaveBeenCalledWith("/tickets/123");
+    });
+  });
+
+  it("toggles password visibility", async () => {
+    render(<LoginForm />);
+
+    const passwordInput = screen.getByLabelText(/password/i, {
+      selector: "input",
+    }) as HTMLInputElement;
+
+    expect(passwordInput.type).toBe("password");
+
+    await user.click(screen.getByLabelText(/show password/i));
+    expect(passwordInput.type).toBe("text");
+
+    await user.click(screen.getByLabelText(/hide password/i));
+    expect(passwordInput.type).toBe("password");
+  });
 });
