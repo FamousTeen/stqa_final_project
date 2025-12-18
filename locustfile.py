@@ -56,3 +56,46 @@ class TicketUser(HttpUser):
             "confirm_password": "newpassword123"
         })
 
+class AdminUser(HttpUser):
+    wait_time = between(5, 10)
+    weight = 1
+
+    concert_id = "a458c4d2-9fc8-4d87-9a16-7aabe7ac9305"
+    order_id = "order-id-sample"
+    user_id = "user-id-sample"
+
+    #Read
+    @task(2)
+    def admin_view_concerts(self):
+        with self.client.get("/admin/concerts", catch_response=True) as res:
+            res.success()
+
+    #Create
+    @task(1)
+    def admin_create_concert(self):
+        with self.client.post("/admin/concerts", catch_response=True) as res:
+            res.success()
+
+    #Update
+    @task(1)
+    def admin_update_concert(self):
+        with self.client.put(f"/admin/concerts/{self.concert_id}", catch_response=True) as res:
+            res.success()
+
+    #Delete
+    @task(1)
+    def admin_delete_concert(self):
+        with self.client.delete(f"/admin/concerts/{self.concert_id}", catch_response=True) as res:
+            res.success()
+
+    #buat Update Status
+    @task(2)
+    def admin_update_order_status(self):
+        with self.client.patch(f"/admin/orders/{self.order_id}", catch_response=True) as res:
+            res.success()
+
+    #Enable / Disable user
+    @task(1)
+    def admin_toggle_user(self):
+        with self.client.patch(f"/admin/users/{self.user_id}", catch_response=True) as res:
+            res.success()
