@@ -65,7 +65,7 @@ export default function ForgotPasswordForm() {
         </div>
 
         <div className="flex items-center justify-between mt-6">
-          <a href="/login" className="text-sm text-indigo-300 hover:text-indigo-400 transition underline">Back to login</a>
+          <a href="/auth/login" className="text-sm text-indigo-300 hover:text-indigo-400 transition underline">Back to login</a>
 
           <button
             type="submit"
