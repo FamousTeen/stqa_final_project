@@ -20,7 +20,7 @@ class TicketUser(HttpUser):
 
     @task(1)
     def buy_ticket(self):
-        self.client.post("/tickets", json={
+        self.client.post("/events", json={
             "event_id": 1,
             "quantity": 1
         })
