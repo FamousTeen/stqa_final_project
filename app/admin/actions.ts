@@ -86,13 +86,32 @@ export async function uploadImage(formData: FormData) {
   const file = formData.get('file') as File;
   if (!file) throw new Error('No file uploaded');
 
-  const fileExt = file.name.split('.').pop();
+  // Validate file size (max 10MB)
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  if (file.size > maxSize) {
+    throw new Error('File size exceeds 10MB limit');
+  }
+
+  // Validate file type
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error('Invalid file type. Allowed: JPEG, PNG, GIF, WebP');
+  }
+
+  const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
   const fileName = `${Date.now()}.${fileExt}`;
   const filePath = `${fileName}`;
 
+  // Convert File to ArrayBuffer for Supabase upload
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = new Uint8Array(arrayBuffer);
+
   const { error: uploadError } = await supabaseServer.storage
     .from('concerts')
-    .upload(filePath, file);
+    .upload(filePath, buffer, {
+      contentType: file.type,
+      upsert: false,
+    });
 
   if (uploadError) throw uploadError;
 
@@ -126,9 +145,34 @@ export async function getOrders() {
   return data as Order[];
 }
 
-export async function updateOrderStatus(id: string, status: string) {
+export async function updateOrderStatus(id: string, newStatus: string) {
   await checkAdmin();
-  const { error } = await supabaseServer.from('orders').update({ status }).eq('id', id);
+  
+  // Get current order status
+  const { data: order, error: fetchError } = await supabaseServer
+    .from('orders')
+    .select('status')
+    .eq('id', id)
+    .single();
+  
+  if (fetchError) throw fetchError;
+  if (!order) throw new Error('Order not found');
+  
+  const currentStatus = order.status;
+  
+  // Validate status transition
+  const allowedTransitions: Record<string, string[]> = {
+    'pending': ['pending', 'success', 'cancelled'],
+    'success': ['success', 'cancelled'], // Cannot go back to pending
+    'cancelled': ['cancelled'], // Cannot change once cancelled
+  };
+  
+  const allowed = allowedTransitions[currentStatus] || [];
+  if (!allowed.includes(newStatus)) {
+    throw new Error(`Cannot change status from "${currentStatus}" to "${newStatus}"`);
+  }
+  
+  const { error } = await supabaseServer.from('orders').update({ status: newStatus }).eq('id', id);
   if (error) throw error;
   revalidatePath('/admin/orders');
 }
