@@ -12,6 +12,7 @@ const config = {
   },
   testMatch: [
     "**/__tests__/**/*.test.[jt]s?(x)",
+    "**/__tests__/**/*.integration.test.[jt]s?(x)",
     "**/?(*.)+(spec|test).[jt]s?(x)",
   ],
   collectCoverageFrom: [
@@ -25,6 +26,15 @@ const config = {
     "<rootDir>/.next/",
     "<rootDir>/app/types/",
   ],
+  // Coverage thresholds following best practices
+  coverageThreshold: {
+    global: {
+      branches: 50,
+      functions: 50,
+      lines: 50,
+      statements: 50,
+    },
+  },
 };
 
 export default createJestConfig(config);
