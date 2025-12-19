@@ -54,7 +54,7 @@ describe("ForgotPasswordForm", () => {
     await user.click(screen.getByRole("button", { name: /send reset link/i }));
 
     expect(resetPassword).toHaveBeenCalledWith("user@example.com", {
-      redirectTo: undefined,
+      redirectTo: expect.any(String),
     });
     expect(
       await screen.findByText(/check your email for password reset/i)

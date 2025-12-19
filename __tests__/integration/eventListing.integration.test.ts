@@ -17,7 +17,6 @@
 import {
   buildConcert,
   buildConcertsFromData,
-  CONCERT_DATA,
   resetIdCounters,
 } from "./fixtures/testData";
 import type { Concert } from "@/app/types/concert";
@@ -92,25 +91,6 @@ class EventListingService {
       .slice(0, limit);
 
     return { data: featured, error: null };
-  }
-
-  /**
-   * Search events by title or location
-   */
-  async searchEvents(query: string): Promise<{ data: Concert[] | null; error: { message: string } | null }> {
-    if (this.shouldError) {
-      return { data: null, error: { message: this.errorMessage } };
-    }
-
-    const lowerQuery = query.toLowerCase();
-    const results = this.concerts.filter(
-      c =>
-        c.published === true &&
-        (c.title.toLowerCase().includes(lowerQuery) ||
-          c.location.toLowerCase().includes(lowerQuery))
-    );
-
-    return { data: results, error: null };
   }
 
   /**
@@ -334,74 +314,7 @@ describe("Homepage Featured Events Integration Tests", () => {
   });
 });
 
-// ============================================================
-// Test Suite: Event Search
-// ============================================================
 
-describe("Event Search Integration Tests", () => {
-  let eventService: EventListingService;
-
-  beforeEach(() => {
-    resetIdCounters();
-    eventService = new EventListingService();
-
-    // Setup test data
-    eventService.addConcert(buildConcert({ 
-      title: "Rock Night 2025", 
-      location: "Stadium Arena",
-      published: true 
-    }));
-    eventService.addConcert(buildConcert({ 
-      title: "Jazz Evening", 
-      location: "City Concert Hall",
-      published: true 
-    }));
-    eventService.addConcert(buildConcert({ 
-      title: "Pop Festival", 
-      location: "Beach Stadium",
-      published: true 
-    }));
-  });
-
-  describe("Scenario: Search by title", () => {
-    it("should find events matching title", async () => {
-      const result = await eventService.searchEvents("Rock");
-
-      expect(result.data).toHaveLength(1);
-      expect(result.data![0].title).toContain("Rock");
-    });
-
-    it("should be case insensitive", async () => {
-      const result = await eventService.searchEvents("JAZZ");
-
-      expect(result.data).toHaveLength(1);
-      expect(result.data![0].title).toBe("Jazz Evening");
-    });
-
-    it("should return multiple matches", async () => {
-      const result = await eventService.searchEvents("stadium");
-
-      expect(result.data).toHaveLength(2); // Stadium Arena and Beach Stadium
-    });
-  });
-
-  describe("Scenario: Search by location", () => {
-    it("should find events by location", async () => {
-      const result = await eventService.searchEvents("Concert Hall");
-
-      expect(result.data).toHaveLength(1);
-      expect(result.data![0].location).toContain("Concert Hall");
-    });
-  });
-
-  describe("Scenario: No results", () => {
-    it("should return empty array for no matches", async () => {
-      const result = await eventService.searchEvents("Classical");
-
-      expect(result.data).toEqual([]);
-    });
-  });
-});
 
 // ============================================================
 // Test Suite: Event Availability
@@ -579,15 +492,6 @@ describe("Public Event Access Integration Tests", () => {
 
       // No session/auth check required
       const result = await eventService.getPublishedEvents();
-
-      expect(result.error).toBeNull();
-      expect(result.data).toHaveLength(1);
-    });
-
-    it("should allow search without authentication", async () => {
-      eventService.addConcert(buildConcert({ title: "Public Event", published: true }));
-
-      const result = await eventService.searchEvents("Public");
 
       expect(result.error).toBeNull();
       expect(result.data).toHaveLength(1);

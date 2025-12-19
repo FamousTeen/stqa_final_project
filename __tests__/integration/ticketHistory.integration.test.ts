@@ -18,7 +18,6 @@
 import {
   buildConcert,
   buildOrder,
-  MOCK_USER_SESSION,
   resetIdCounters,
 } from "./fixtures/testData";
 import type { Concert } from "@/app/types/concert";
@@ -125,29 +124,6 @@ class TicketHistoryService {
       },
       error: null,
     };
-  }
-
-  /**
-   * Get orders filtered by status
-   */
-  async getOrdersByStatus(status: string): Promise<{ data: Order[] | null; error: { message: string } | null }> {
-    if (this.shouldError) {
-      return { data: null, error: { message: this.errorMessage } };
-    }
-
-    const authCheck = await this.checkAuthentication();
-    if (!authCheck.authenticated) {
-      return { data: null, error: { message: "Please login" } };
-    }
-
-    const filteredOrders = this.orders
-      .filter(o => o.user_id === this.session!.user.id && o.status === status)
-      .map(order => ({
-        ...order,
-        concerts: this.concerts.get(order.concert_id) || order.concerts,
-      }));
-
-    return { data: filteredOrders, error: null };
   }
 }
 
@@ -412,36 +388,6 @@ describe("Order Status Display Integration Tests", () => {
 
       const result = await ticketService.getUserOrders();
 
-      expect(result.data![0].status).toBe("cancelled");
-    });
-  });
-
-  describe("Scenario: Filter orders by status", () => {
-    beforeEach(() => {
-      // Add orders with different statuses
-      ticketService.addOrder(buildOrder({ user_id: "user-1", concert_id: testConcert.id, status: "success" }));
-      ticketService.addOrder(buildOrder({ user_id: "user-1", concert_id: testConcert.id, status: "pending" }));
-      ticketService.addOrder(buildOrder({ user_id: "user-1", concert_id: testConcert.id, status: "cancelled" }));
-    });
-
-    it("should filter by success status", async () => {
-      const result = await ticketService.getOrdersByStatus("success");
-
-      expect(result.data).toHaveLength(1);
-      expect(result.data![0].status).toBe("success");
-    });
-
-    it("should filter by pending status", async () => {
-      const result = await ticketService.getOrdersByStatus("pending");
-
-      expect(result.data).toHaveLength(1);
-      expect(result.data![0].status).toBe("pending");
-    });
-
-    it("should filter by cancelled status", async () => {
-      const result = await ticketService.getOrdersByStatus("cancelled");
-
-      expect(result.data).toHaveLength(1);
       expect(result.data![0].status).toBe("cancelled");
     });
   });

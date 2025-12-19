@@ -35,6 +35,7 @@ jest.mock("@/app/lib/supabaseServer", () => {
     eq: jest.fn(),
     neq: jest.fn(),
     limit: jest.fn(),
+    single: jest.fn(),
   };
 
   const profilesApi = {
@@ -106,6 +107,7 @@ describe("admin actions", () => {
     ordersApi.neq.mockReturnValue(ordersApi);
     ordersApi.order.mockResolvedValue({ data: [], error: null });
     ordersApi.limit.mockResolvedValue({ data: [], error: null });
+    ordersApi.single.mockResolvedValue({ data: { status: 'pending' }, error: null });
     ordersApi.update.mockReturnValue({
       eq: jest.fn().mockResolvedValue({ error: null }),
     });

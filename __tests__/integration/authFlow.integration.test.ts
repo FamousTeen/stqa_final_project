@@ -13,12 +13,10 @@
  * Reference: https://github.com/FrostyVin/stqa_codes
  */
 
-import { createClient } from "@supabase/supabase-js";
 import {
   MOCK_ADMIN_SESSION,
   MOCK_USER_SESSION,
   MOCK_DISABLED_USER_SESSION,
-  VALIDATION_TEST_CASES,
 } from "./fixtures/testData";
 
 // ============================================================
@@ -28,8 +26,6 @@ import {
 jest.mock("@supabase/supabase-js", () => ({
   createClient: jest.fn(),
 }));
-
-const mockCreateClient = createClient as jest.Mock;
 
 // ============================================================
 // Auth Service Simulation

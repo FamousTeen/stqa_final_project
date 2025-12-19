@@ -76,7 +76,7 @@ export function OrderList({ orders }: { orders: Order[] }) {
                     value={order.status} 
                     onChange={(e) => handleStatusChange(order.id, order.status, e.target.value)}
                     disabled={loadingId === order.id || allowedStatuses.length <= 1}
-                    className="border rounded p-1 bg-gray-900 border border-gray-800 text-gray-300 disabled:opacity-50"
+                    className="rounded p-1 bg-gray-900 border border-gray-800 text-gray-300 disabled:opacity-50"
                   >
                     <option value="pending" disabled={!allowedStatuses.includes('pending')}>Pending</option>
                     <option value="success" disabled={!allowedStatuses.includes('success')}>Paid</option>
